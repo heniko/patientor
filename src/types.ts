@@ -46,16 +46,16 @@ interface OccupationalHealthCareEntry extends BaseEntry {
   type: Type.OccupationalHealthCareEntry;
   employerName: string;
   sickLeave?: {
-      startDate: string;
-      endDate: string;
+    startDate: string;
+    endDate: string;
   };
 }
 
 interface HospitalEntry extends BaseEntry {
   type: Type.HospitalEntry;
   discharge: {
-      date: string;
-      criteria: string;
+    date: string;
+    criteria: string;
   };
 }
 
