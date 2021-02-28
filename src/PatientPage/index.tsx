@@ -6,6 +6,7 @@ import { Icon, Header } from 'semantic-ui-react';
 import { apiBaseUrl } from '../constants';
 import { Patient } from '../types';
 import { useStateValue, updatePatient } from '../state';
+import EntryDetails from './EntryDetails';
 
 const PatientPage: React.FC = () => {
     interface ParamTypes {
@@ -71,6 +72,12 @@ const PatientPage: React.FC = () => {
             <p>
                 occupation: {patient.occupation}
             </p>
+            <Header as="h3">
+                Entries
+            </Header>
+            {
+                patient.entries?.map(entry => <EntryDetails key={entry.id} entry={entry}></EntryDetails>)
+            }
         </div>
     );
 };
