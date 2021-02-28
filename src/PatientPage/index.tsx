@@ -5,7 +5,7 @@ import { Icon, Header } from 'semantic-ui-react';
 
 import { apiBaseUrl } from '../constants';
 import { Patient } from '../types';
-import { useStateValue } from '../state';
+import { useStateValue, updatePatient } from '../state';
 
 const PatientPage: React.FC = () => {
     interface ParamTypes {
@@ -22,7 +22,7 @@ const PatientPage: React.FC = () => {
                     `${apiBaseUrl}/patients/${id}`
                 );
                 setPatient(patientData);
-                dispatch({ type: 'UPDATE_PATIENT', payload: patientData });
+                dispatch(updatePatient(patientData));
             } catch (error) {
                 console.error(error);
             }
@@ -41,7 +41,7 @@ const PatientPage: React.FC = () => {
         } else {
             fetchPatientData();
         }
-    }, [id, dispatch]);
+    }, [id, dispatch, patients]);
 
     if (!patient) {
         return (
