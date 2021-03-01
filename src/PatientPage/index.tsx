@@ -11,6 +11,8 @@ import AddHealthCheckEntryModal from '../AddPatientEntry/AddHealthCheckEntryModa
 import { HealthCheckEntryFormValues } from '../AddPatientEntry/AddHealthCheckEntryForm';
 import { HospitalEntryFormValues } from '../AddPatientEntry/AddHospitalEntryForm';
 import AddHospitalEntryModal from '../AddPatientEntry/AddHospitalEntryModal';
+import { OccupationalHealthcareEntryFormValues } from '../AddPatientEntry/AddOccupationalHealthcareEntryForm';
+import AddOccupationalHealthcareEntryModal from '../AddPatientEntry/AddOccupationalHealthcareEntryModal';
 
 const PatientPage: React.FC = () => {
     interface ParamTypes {
@@ -82,15 +84,62 @@ const PatientPage: React.FC = () => {
             );
             dispatch(updatePatient(updatedPatient));
             closeHospitalEntryModal();
-        }catch (error) {
+        } catch (error) {
             console.error(error);
             setHospitalEntryError(error.response.data.error);
         }
     };
 
     /*
-        TODO: Occupational healthcare entry 
+        Occupational healthcare entry 
     */
+    const [OccupationalEntryModalOpen, setOccupationalEntryModalOpen] = React.useState<boolean>(false);
+    const [occupationalEntryError, setOccupationalEntryError] = React.useState<string | undefined>();
+
+    const openOccupationalEntryModal = (): void => setOccupationalEntryModalOpen(true);
+
+    const closeOccupationalEntryModal = (): void => {
+        setOccupationalEntryModalOpen(false);
+        setOccupationalEntryError(undefined);
+    };
+
+    const submitNewOccupationalEntry = async (values: OccupationalHealthcareEntryFormValues) => {
+        try {
+            let newEntry;
+            if (values.startDate && values.endDate) {
+                newEntry = {
+                    description: values.description,
+                    date: values.date,
+                    specialist: values.specialist,
+                    diagnosisCodes: values.diagnosisCodes,
+                    employerName: values.employerName,
+                    sickLeave: {
+                        startDate: values.startDate,
+                        endDate: values.endDate
+                    },
+                    type: 'OccupationalHealthcare'
+                }
+            } else {
+                newEntry = {
+                    description: values.description,
+                    date: values.date,
+                    specialist: values.specialist,
+                    diagnosisCodes: values.diagnosisCodes,
+                    employerName: values.employerName,
+                    type: 'OccupationalHealthcare'
+                }
+            }
+            const { data: updatedPatient } = await axios.post<Patient>(
+                `${apiBaseUrl}/patients/${id}/entries`,
+                newEntry
+            );
+            dispatch(updatePatient(updatedPatient));
+            closeOccupationalEntryModal();
+        } catch (error) {
+            console.error(error);
+            setHospitalEntryError(error.response.data.error);
+        }
+    };
 
     React.useEffect(() => {
         const fetchPatientData = async () => {
@@ -165,6 +214,13 @@ const PatientPage: React.FC = () => {
                 onClose={closeHospitalEntryModal}
             />
             <Button onClick={() => openHospitalEntryModal()}><Icon name="hospital" /></Button>
+            <AddOccupationalHealthcareEntryModal
+                modalOpen={OccupationalEntryModalOpen}
+                onSubmit={submitNewOccupationalEntry}
+                error={occupationalEntryError}
+                onClose={closeOccupationalEntryModal}
+            />
+            <Button onClick={() => openOccupationalEntryModal()}><Icon name="cog" /></Button>
             {
                 patient.entries?.map(entry => <EntryDetails key={entry.id} entry={entry}></EntryDetails>)
             }
