@@ -1,12 +1,14 @@
 import React from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router';
-import { Icon, Header } from 'semantic-ui-react';
+import { Icon, Header, Button } from 'semantic-ui-react';
 
 import { apiBaseUrl } from '../constants';
 import { Patient } from '../types';
 import { useStateValue, updatePatient } from '../state';
 import EntryDetails from './EntryDetails';
+import AddEntryModal from './AddEntryModal';
+import { EntryFormValues } from './AddEntryForm';
 
 const PatientPage: React.FC = () => {
     interface ParamTypes {
@@ -15,6 +17,33 @@ const PatientPage: React.FC = () => {
     const [{ patients }, dispatch] = useStateValue();
     const { id } = useParams<ParamTypes>();
     const [patient, setPatient] = React.useState<Patient | undefined>(undefined);
+    const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+    const [error, setError] = React.useState<string | undefined>();
+
+    const openModal = (): void => setModalOpen(true);
+
+    const closeModal = (): void => {
+        setModalOpen(false);
+        setError(undefined);
+    };
+
+    const submitNewEntry = async (values: EntryFormValues) => {
+        console.log(values);
+        try {
+            const {data: updatedPatient} = await axios.post<Patient>(
+                `${apiBaseUrl}/patients/${id}/entries`,
+                {
+                    ...values,
+                    type: 'HealthCheck'
+                }
+            );
+            dispatch(updatePatient(updatedPatient));
+            closeModal();
+        }catch(error) {
+            console.error(error);
+            setError(error.response.data.error);
+        }
+    };
 
     React.useEffect(() => {
         const fetchPatientData = async () => {
@@ -51,7 +80,7 @@ const PatientPage: React.FC = () => {
     }
 
     return (
-        <div>
+        <div className="App">
             <Header as="h2">
                 {patient.name}
                 {
@@ -75,6 +104,13 @@ const PatientPage: React.FC = () => {
             <Header as="h3">
                 Entries
             </Header>
+            <AddEntryModal
+                modalOpen={modalOpen}
+                onSubmit={submitNewEntry}
+                error={error}
+                onClose={closeModal}
+            />
+            <Button onClick={() => openModal()}><Icon name="hospital"/></Button>
             {
                 patient.entries?.map(entry => <EntryDetails key={entry.id} entry={entry}></EntryDetails>)
             }

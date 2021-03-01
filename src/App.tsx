@@ -41,7 +41,7 @@ const App: React.FC = () => {
     }
 
     fetchDiagnosesList();
-  })
+  }, [dispatch]);
 
   return (
     <div className="App">
