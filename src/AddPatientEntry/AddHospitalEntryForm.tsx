@@ -2,8 +2,7 @@ import React from 'react';
 import { Grid, Button } from 'semantic-ui-react';
 import { Field, Formik, Form } from 'formik';
 
-import { Entry } from '../types';
-import { NumberField, TextField, DiagnosisSelection } from '../AddPatientModal/FormField';
+import { TextField, DiagnosisSelection } from '../AddPatientModal/FormField';
 import { useStateValue } from '../state';
 
 export type HospitalEntryFormValues = {
