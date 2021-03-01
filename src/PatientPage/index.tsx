@@ -7,8 +7,10 @@ import { apiBaseUrl } from '../constants';
 import { Patient } from '../types';
 import { useStateValue, updatePatient } from '../state';
 import EntryDetails from './EntryDetails';
-import AddEntryModal from './AddEntryModal';
-import { EntryFormValues } from './AddEntryForm';
+import AddHealthCheckEntryModal from '../AddPatientEntry/AddHealthCheckEntryModal';
+import { HealthCheckEntryFormValues } from '../AddPatientEntry/AddHealthCheckEntryForm';
+import { HospitalEntryFormValues } from '../AddPatientEntry/AddHospitalEntryForm';
+import AddHospitalEntryModal from '../AddPatientEntry/AddHospitalEntryModal';
 
 const PatientPage: React.FC = () => {
     interface ParamTypes {
@@ -17,20 +19,24 @@ const PatientPage: React.FC = () => {
     const [{ patients }, dispatch] = useStateValue();
     const { id } = useParams<ParamTypes>();
     const [patient, setPatient] = React.useState<Patient | undefined>(undefined);
-    const [modalOpen, setModalOpen] = React.useState<boolean>(false);
-    const [error, setError] = React.useState<string | undefined>();
 
-    const openModal = (): void => setModalOpen(true);
+    /*
+        Health check entry
+    */
+    const [healthCheckModalOpen, setHealthCheckModalOpen] = React.useState<boolean>(false);
+    const [healthCheckError, setHealthCheckError] = React.useState<string | undefined>();
 
-    const closeModal = (): void => {
-        setModalOpen(false);
-        setError(undefined);
+    const openHealthCheckModal = (): void => setHealthCheckModalOpen(true);
+
+    const closeHealthCheckModal = (): void => {
+        setHealthCheckModalOpen(false);
+        setHealthCheckError(undefined);
     };
 
-    const submitNewEntry = async (values: EntryFormValues) => {
+    const submitNewHealthCheckEntry = async (values: HealthCheckEntryFormValues) => {
         console.log(values);
         try {
-            const {data: updatedPatient} = await axios.post<Patient>(
+            const { data: updatedPatient } = await axios.post<Patient>(
                 `${apiBaseUrl}/patients/${id}/entries`,
                 {
                     ...values,
@@ -38,12 +44,53 @@ const PatientPage: React.FC = () => {
                 }
             );
             dispatch(updatePatient(updatedPatient));
-            closeModal();
-        }catch(error) {
+            closeHealthCheckModal();
+        } catch (error) {
             console.error(error);
-            setError(error.response.data.error);
+            setHealthCheckError(error.response.data.error);
         }
     };
+
+    /*
+        Hospital entry
+    */
+    const [hospitalEntryModalOpen, setHospitalEntryModalOpen] = React.useState<boolean>(false);
+    const [hospitalEntryError, setHospitalEntryError] = React.useState<string | undefined>();
+
+    const openHospitalEntryModal = (): void => setHospitalEntryModalOpen(true);
+
+    const closeHospitalEntryModal = (): void => {
+        setHospitalEntryModalOpen(false);
+        setHospitalEntryError(undefined);
+    };
+
+    const submitNewHospitalEntry = async (values: HospitalEntryFormValues) => {
+        try {
+            const { data: updatedPatient } = await axios.post<Patient>(
+                `${apiBaseUrl}/patients/${id}/entries`,
+                {
+                    description: values.description,
+                    date: values.date,
+                    specialist: values.specialist,
+                    diagnosisCodes: values.diagnosisCodes,
+                    discharge: {
+                        date: values.dischargeDate,
+                        criteria: values.dischargeCriteria
+                    },
+                    type: 'Hospital'
+                }
+            );
+            dispatch(updatePatient(updatedPatient));
+            closeHospitalEntryModal();
+        }catch (error) {
+            console.error(error);
+            setHospitalEntryError(error.response.data.error);
+        }
+    };
+
+    /*
+        TODO: Occupational healthcare entry 
+    */
 
     React.useEffect(() => {
         const fetchPatientData = async () => {
@@ -104,13 +151,20 @@ const PatientPage: React.FC = () => {
             <Header as="h3">
                 Entries
             </Header>
-            <AddEntryModal
-                modalOpen={modalOpen}
-                onSubmit={submitNewEntry}
-                error={error}
-                onClose={closeModal}
+            <AddHealthCheckEntryModal
+                modalOpen={healthCheckModalOpen}
+                onSubmit={submitNewHealthCheckEntry}
+                error={healthCheckError}
+                onClose={closeHealthCheckModal}
             />
-            <Button onClick={() => openModal()}><Icon name="hospital"/></Button>
+            <Button onClick={() => openHealthCheckModal()}><Icon name="doctor" /></Button>
+            <AddHospitalEntryModal
+                modalOpen={hospitalEntryModalOpen}
+                onSubmit={submitNewHospitalEntry}
+                error={hospitalEntryError}
+                onClose={closeHospitalEntryModal}
+            />
+            <Button onClick={() => openHospitalEntryModal()}><Icon name="hospital" /></Button>
             {
                 patient.entries?.map(entry => <EntryDetails key={entry.id} entry={entry}></EntryDetails>)
             }

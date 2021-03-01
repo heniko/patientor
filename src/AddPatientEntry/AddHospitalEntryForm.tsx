@@ -1,19 +1,26 @@
 import React from 'react';
 import { Grid, Button } from 'semantic-ui-react';
-import { Field, Formik, Form, FieldArray, validateYupSchema } from 'formik';
+import { Field, Formik, Form } from 'formik';
 
-import { Entry, Type } from '../types';
+import { Entry } from '../types';
 import { NumberField, TextField, DiagnosisSelection } from '../AddPatientModal/FormField';
 import { useStateValue } from '../state';
 
-export type EntryFormValues = Omit<Entry, 'id' | 'type'>;
+export type HospitalEntryFormValues = {
+    description: string;
+    date: string;
+    specialist: string;
+    diagnosisCodes: string[];
+    dischargeDate: string;
+    dischargeCriteria: string;
+};
 
 interface EntryFormProps {
-    onSubmit: (values: EntryFormValues) => void;
+    onSubmit: (values: HospitalEntryFormValues) => void;
     onCancel: () => void;
 }
 
-const AddEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
+const AddHospitalEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
     const [{ diagnoses }] = useStateValue();
 
     return (
@@ -23,13 +30,14 @@ const AddEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
                 date: '',
                 specialist: '',
                 diagnosisCodes: [],
-                healthCheckRating: 0
+                dischargeDate: '',
+                dischargeCriteria: ''
             }}
             onSubmit={onSubmit}
             validate={values => {
                 const requiredError = 'Field is required';
                 const errors: { [field: string]: string } = {};
-                if(!values.description) {
+                if (!values.description) {
                     errors.description = requiredError;
                 }
                 if (!values.date) {
@@ -38,8 +46,11 @@ const AddEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
                 if (!values.specialist) {
                     errors.specialist = requiredError;
                 }
-                if (values.healthCheckRating < 0 || values.healthCheckRating > 3) {
-                    errors.healthCheckRating = 'Incorrect value';
+                if (!values.dischargeDate) {
+                    errors.sickLeaveDate = requiredError;
+                }
+                if (!values.dischargeCriteria) {
+                    errors.sickLeaveDate = requiredError;
                 }
                 return errors;
             }}
@@ -66,11 +77,16 @@ const AddEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
                             component={TextField}
                         />
                         <Field
-                            label="Health check rating"
-                            name="healthCheckRating"
-                            min={0}
-                            max={3}
-                            component={NumberField}
+                            label="Discharge date"
+                            placeholder="YYYY-MM-DD"
+                            name="dischargeDate"
+                            component={TextField}
+                        />
+                        <Field
+                            label="Discharge criteria"
+                            placeholder="Discharge criteria"
+                            name="dischargeCriteria"
+                            component={TextField}
                         />
                         <DiagnosisSelection
                             setFieldValue={setFieldValue}
@@ -101,4 +117,4 @@ const AddEntryForm: React.FC<EntryFormProps> = ({ onSubmit, onCancel }) => {
     );
 };
 
-export default AddEntryForm;
+export default AddHospitalEntryForm;
